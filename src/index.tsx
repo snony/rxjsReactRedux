@@ -1,37 +1,49 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import styled from 'styled-components/macro'
-import { fromEvent, Observable, Subject } from 'rxjs';
-import { map } from 'rxjs/operators'
+import { fromEvent, Observable } from 'rxjs';
+import { map, bufferCount } from 'rxjs/operators'
 
 const Container = styled.div`
     background-color: white;
 `
 
-const counter = new Subject()
-class RxjPlay extends React.Component {
-    source: Observable<Event> = fromEvent(document, 'click')
+// const counter = new Subject()
+interface State {
+    total: number
+}
+class RxjPlay extends React.Component<{}, State>{
+    source: Observable<Event> | null = null
     content: Date[] = []
+    myRef = React.createRef<HTMLButtonElement>()
     constructor(props: any) {
         super(props)
-        // th
-        // this.source = 
-        console.log(counter)
+        this.state = { total: 0 }
     }
     componentDidMount() {
-        const example = this.source.pipe(map(event => `Event time : ${event.timeStamp}`))
+        if (this.myRef.current) {
+            this.source = fromEvent(this.myRef.current, 'click')
+            const example = this.source.pipe(
+                bufferCount(2),
+                map(event => "double clicked")
+            )
+            example.subscribe(val => this.addItem(val))
+        }
 
-        const subscribe = example.subscribe(val => this.addItem(val))
 
     }
 
     addItem = (val: string) => {
-        console.log(val)
+        const total = this.state.total + 1
+        this.setState({ total })
     }
     render() {
         return (
             <Container >
-                <button >Click On me</button>
+                <button ref={this.myRef} id="danger">Double Click to see changes</button>
+                <div>
+                    Total Number you have double clicked: {this.state.total}
+                </div>
             </Container>
         )
     }
