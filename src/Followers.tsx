@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components/macro'
-import { of, Observable, from } from 'rxjs';
+import { of, Observable, from, Subscription } from 'rxjs';
 import { flatMap, map } from 'rxjs/operators';
 import * as $ from 'jquery'
 
@@ -12,29 +12,25 @@ const Container = styled.div`
 class Followers extends React.Component {
 
     requestObservable: Observable<string> = of('https://api.github.com/users')
+    responseObservable: Observable<any> | null = null
     componentDidMount() {
-        const responseObservable = this.requestObservable
+        this.responseObservable = this.requestObservable
             .pipe(
                 flatMap(requestUrl =>
                     from($.getJSON(requestUrl))
                 )
             )
-
-        responseObservable.subscribe(response => {
-            console.log(response[0].login)
-            console.log(response[1].login)
-            console.log(response[2].login)
-        })
-
+        this.forceUpdate()//TODO ML 01/02 not good
     }
 
-    createSuggestionStream = (responseObsv: Observable<any>) => {
-        return responseObsv
+    createSuggestionStream = (responseObsv: Observable<any> | null) => {
+        return responseObsv ? responseObsv
             .pipe(
                 map((listUser: any) =>
                     listUser[Math.floor(Math.random() * listUser.length)]
                 )
             )
+            : null
     }
 
     render() {
@@ -44,12 +40,69 @@ class Followers extends React.Component {
                 <FollowHeader >Who to follow <Link href="#">Refresh</Link></FollowHeader>
                 <ProfileWrapper>
                     {items.map(item =>
-                        <Profile key={item}>
-                            <ImageWrapper />
-                        </Profile>)}
+                        <UserProfile key={item} observable={this.createSuggestionStream(this.responseObservable)} />)}
                 </ProfileWrapper>
 
             </Container>
+        )
+    }
+}
+
+interface Props {
+    observable: Observable<any> | null
+}
+
+interface State {
+    userName: string
+    userUrl: string
+    imgSrc: string
+}
+class UserProfile extends React.PureComponent<Props, State> {
+
+    subscriptions: Subscription | null = null
+    constructor(props: Props) {
+        super(props)
+        this.state = { userUrl: '#', imgSrc: '#', userName: 'None' }
+    }
+
+    componentDidMount() {
+        if (this.props.observable) {
+            this.subscriptions = this.props.observable.subscribe(user => {
+                this.updateData(user)
+            })
+        }
+    }
+
+    componentDidUpdate(prevProps: Props) {
+        if (prevProps.observable !== this.props.observable) {
+            if (this.props.observable) {
+                this.subscriptions = this.props.observable.subscribe(user => {
+                    this.updateData(user)
+                })
+            }
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.subscriptions) {
+            this.subscriptions.unsubscribe()
+        }
+    }
+
+    updateData = (user: any) => {
+        const userName = user.login
+        const imgSrc = user.avatar_url
+        const userUrl = user.html_url
+        this.setState({ userName, imgSrc, userUrl })
+    }
+    render() {
+        const { userUrl, imgSrc, userName } = this.state
+        return (
+            <Profile>
+                <ImageWrapper >
+                    <Img src={imgSrc} />
+                </ImageWrapper> <a href={userUrl}>{userName}</a>
+            </Profile>
         )
     }
 }
@@ -67,6 +120,13 @@ const ImageWrapper = styled.div`
     height: 100px;
     border-radius: 50%;
     background-color: white;
+    display: inline-block;
+`
+
+const Img = styled.img`
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
 `
 
 const ProfileWrapper = styled.ul`
@@ -74,6 +134,7 @@ const ProfileWrapper = styled.ul`
 `
 
 const FollowHeader = styled.div`
+    font-size: 20px;
     font-weight: bold;
 `
 export default Followers
