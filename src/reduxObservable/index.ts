@@ -1,3 +1,4 @@
 import Todo from './TodoContainer'
 import todoReducer from './reducers'
-export { Todo, todoReducer }
+import rootEpics from './combineEpic'
+export { Todo, todoReducer, rootEpics }

@@ -11,6 +11,7 @@ const Ul = styled.ul`
 const TodoItem = styled.li`
     background-color: white;
     width: 90%;
+    margin-bottom: 5px;
 `
 interface Props {
     todos: TodoType[]

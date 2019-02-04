@@ -1,13 +1,20 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import styled from 'styled-components/macro'
-import { Todo } from './reduxObservable'
+import { Todo, rootEpics } from './reduxObservable'
 import { Provider } from 'react-redux';
-import { createStore } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
 import rootReducer from './rootReducers'
+import { createEpicMiddleware } from 'redux-observable'
 
-const store = createStore(rootReducer)
 
+const epicMiddleware = createEpicMiddleware()
+const store = createStore(
+    rootReducer,
+    applyMiddleware(epicMiddleware)
+)
+
+epicMiddleware.run(rootEpics)
 
 const Container = styled.div`
     background-color: #ececec;
