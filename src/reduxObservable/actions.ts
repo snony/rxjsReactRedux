@@ -7,7 +7,7 @@ interface ADDTodo {
     todo: Todo
 }
 export const ADD_TODO = 'ADD_TODO'
-export const add_todo = (todo: Todo) => ({
+export const add_todo = (todo: Todo): ADDTodo => ({
     type: ADD_TODO,
     todo
 })

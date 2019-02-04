@@ -1,3 +1,3 @@
-import Todo from './Todo'
-
-export { Todo }
+import Todo from './TodoContainer'
+import todoReducer from './reducers'
+export { Todo, todoReducer }

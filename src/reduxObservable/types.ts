@@ -1,4 +1,4 @@
 export interface Todo {
     title: string
-    reminder: Date
+    // reminder: Date
 }

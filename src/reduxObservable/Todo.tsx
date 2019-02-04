@@ -1,52 +1,55 @@
 import React from 'react'
 import styled from 'styled-components/macro'
+import { Todo as TodoType } from './types'
+import { Container, InputWrapper, InputContainer, Input, AddBtnWrapper, Btn } from './styled'
 
-const Container = styled.div`
-    background-color: #ececec;
-    height: 100%;
-`
-
-const InputWrapper = styled.div`
-    display: flex;
+const Ul = styled.ul`
+    list-style-type: none;
     padding: 0px;
 `
 
-const InputContainer = styled.div`
+const TodoItem = styled.li`
+    background-color: white;
     width: 90%;
-    padding: 0px;
 `
+interface Props {
+    todos: TodoType[]
+    add_todo: (todo: TodoType) => void
+}
 
-const Input = styled.input`
-    width: 100%;
-    height: 40px;
-    border: none;
-    padding: 0px;
-    text-align: center;
-    font-size: 25px;
-`
+interface State {
+    todoTitle: string
+}
 
-const AddBtnWrapper = styled.div`
-    padding: 0px;
-    height: 40px;
-`
+class Todo extends React.Component<Props, State> {
 
-const Btn = styled.button`
-    height: 40px;
-`
+    constructor(props: Props) {
+        super(props)
+        this.state = { todoTitle: '' }
+    }
 
+    handleInput = ({ target: { value } }: { target: { value: string } }) => {
+        this.setState({ todoTitle: value })
+    }
 
-
-class Todo extends React.Component {
-
+    onAddTodo = () => {
+        const { todoTitle } = this.state
+        const todo: TodoType = { title: todoTitle }
+        this.props.add_todo(todo)
+        this.setState({ todoTitle: '' })
+    }
     render() {
-
+        const { todoTitle } = this.state
+        const { todos } = this.props
         return (
             <Container>
                 <InputWrapper>
-                    <InputContainer><Input /></InputContainer>
-                    <AddBtnWrapper><Btn>Add</Btn></AddBtnWrapper>
+                    <InputContainer><Input onChange={this.handleInput} value={todoTitle} /></InputContainer>
+                    <AddBtnWrapper><Btn onClick={this.onAddTodo}>Add</Btn></AddBtnWrapper>
                 </InputWrapper>
-
+                <Ul>
+                    {todos.map(todo => <TodoItem key={todo.title}>{todo.title}</TodoItem>)}
+                </Ul>
             </Container>
         )
     }
